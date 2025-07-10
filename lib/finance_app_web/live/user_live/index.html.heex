@@ -1,0 +1,47 @@
+<.header>
+  Senarai Pengguna
+  <:actions>
+    <.link patch={~p"/users/new"}>
+      <.button>Pengguna Baharu</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="users"
+  rows={@streams.users}
+  row_click={fn {_id, user} -> JS.navigate(~p"/users/#{user}") end}
+
+>
+  <:col :let={{_id, user}} label="Nama">{user.name}</:col>
+  <:col :let={{_id, user}} label="Umur">{user.age}</:col>
+  <:col :let={{_id, user}} label="Gender">{user.gender}</:col>
+  <:col :let={{_id, user}} label="address">{user.address}</:col>
+  <:col :let={{_id, user}} label="category">{user.category}</:col>
+  <:col :let={{_id, user}} label="Date of Birth">{user.date_of_birth}</:col>
+  <:action :let={{_id, user}}>
+    <div class="sr-only">
+      <.link navigate={~p"/users/#{user}"}>Show</.link>
+    </div>
+    <.link patch={~p"/users/#{user}/edit"}>Ubah</.link>
+  </:action>
+  <:action :let={{id, user}}>
+    <.link
+      phx-click={JS.push("Delete", value: %{id: user.id}) |> hide("##{id}")}
+      data-confirm="Anda Pasti?"
+    >
+      Padam
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="user-modal" show on_cancel={JS.patch(~p"/users")}>
+  <.live_component
+    module={FinanceAppWeb.UserLive.FormComponent}
+    id={@user.id || :new}
+    title={@page_title}
+    action={@live_action}
+    user={@user}
+    patch={~p"/users"}
+  />
+</.modal>
