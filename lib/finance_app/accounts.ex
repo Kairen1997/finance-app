@@ -129,4 +129,5 @@ defmodule FinanceApp.Accounts do
   def user_details(%User{} = user) do
     user_gender(user) <> " " <> user_age_range(user)
   end
+
 end

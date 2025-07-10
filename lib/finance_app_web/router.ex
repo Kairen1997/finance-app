@@ -25,6 +25,7 @@ defmodule FinanceAppWeb.Router do
     live "/users/:id", UserLive.Show, :show
     live "/users/:id/show/edit", UserLive.Show, :edit
     live "/users/:id/bmi_calculator", UserLive.Show, :bmi_calculator
+    live "/users/:id/mykad_checker", UserLive.Show, :mykad_checker
   end
 
   # Other scopes may use custom stacks.

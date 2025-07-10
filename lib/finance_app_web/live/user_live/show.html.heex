@@ -8,6 +8,9 @@
     <.link patch={~p"/users/#{@user}/bmi_calculator"} phx-click={JS.push_focus()}>
       <.button>Calculate BMI</.button>
     </.link>
+      <.link patch={~p"/users/#{@user}/mykad_checker"} phx-click={JS.push_focus()}>
+      <.button>MYKad Checker</.button>
+    </.link>
   </:actions>
 </.header>
 
@@ -47,5 +50,21 @@
     action={@live_action}
     user={@user}
     patch={~p"/users/#{@user}"}
+  />
+</.modal>
+
+<.modal
+  :if={@live_action == :mykad_checker}
+  id="mykad-checker-modal"
+  show
+  on_cancel={JS.patch(~p"/users/#{@user}")}
+>
+  <.live_component
+    module={YourAppWeb.MykadFormComponent}
+    id="mykad-checker"
+    title={@page_title}
+   action={@live_action}
+   user={@user}
+   patch={~p"/users/#{@user}"}
   />
 </.modal>
