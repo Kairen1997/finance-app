@@ -52,14 +52,8 @@
         v{Application.spec(:phoenix, :vsn)}
       </small>
     </h1>
-    <%= if @show_mykad_checker do %>
-      <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-white p-6 rounded shadow-lg relative">
-          <button phx-click="hide_mykad_checker" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">&times;</button>
-          <.live_component module={YourAppWeb.MykadFormComponent} id="mykad-checker-home" />
-        </div>
-      </div>
-    <% end %>
+    <!-- Optionally, add a regular link to a MyKad Checker page here -->
+    <a href="/users/1/mykad_checker" class="mt-6 mb-4 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">MYKad Checker</a>
     <p class="text-[2rem] mt-4 font-semibold leading-10 tracking-tighter text-zinc-900 text-balance">
       Peace of mind from prototype to production.
     </p>
