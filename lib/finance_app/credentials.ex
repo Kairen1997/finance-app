@@ -1,4 +1,4 @@
-defmodule FinanceApp.Authentication do
+defmodule FinanceApp.Credentials do
   @moduledoc """
   The Authentication context.
   """
@@ -6,9 +6,55 @@ defmodule FinanceApp.Authentication do
   import Ecto.Query, warn: false
   alias FinanceApp.Repo
 
-  alias FinanceApp.Authentication.{Credential, CredentialToken, CredentialNotifier}
+  alias FinanceApp.Credentials.{Credential, CredentialToken, CredentialNotifier}
   alias FinanceApp.Credentials.CredentialProfile
 
+
+
+# Profile management functions
+def get_credential_profile(profile_id, opts \\ []) do
+  preload_opts = Keyword.get(opts, :preload, [])
+
+  CredentialProfile
+  |> preload(^preload_opts)
+  |> Repo.get_by(id: profile_id)
+end
+
+def get_credential(credential_id, opts \\ []) do
+  preload_opts = Keyword.get(opts, :preload, [])
+
+  Credential
+  |> preload(^preload_opts)
+  |> Repo.get_by(id: credential_id)
+end
+
+def create_credential_profile(credential, attrs) do
+  %CredentialProfile{}
+  |> CredentialProfile.changeset(Map.put(attrs, "credential_id", credential.id))
+  |> Repo.insert()
+end
+
+def update_credential_profile(%CredentialProfile{} = profile, attrs) do
+  profile
+  |> CredentialProfile.changeset(attrs)
+  |> Repo.update()
+end
+
+def change_credential_profile(profile \\ %CredentialProfile{}, attrs \\ %{})
+
+def change_credential_profile(%CredentialProfile{} = profile, attrs) do
+    profile
+    |> CredentialProfile.changeset(attrs)
+end
+
+def change_credential_profile(nil, attrs) do
+  %CredentialProfile{}
+  |> CredentialProfile.changeset(attrs)
+end
+
+def get_credential_profile_by_credential_id(credential_id) do
+  Repo.get_by(CredentialProfile, credential_id: credential_id)
+end
   ## Database getters
 
   @doc """
@@ -24,7 +70,13 @@ defmodule FinanceApp.Authentication do
 
   """
   def get_credential_by_email(email) when is_binary(email) do
-    Repo.get_by(Credential, email: email)
+
+    Credential
+    |> Repo.get_by(email: email)
+    |> case do
+      nil -> nil
+      credential -> Repo.preload(credential, :profile)
+    end
   end
 
   @doc """
@@ -41,7 +93,13 @@ defmodule FinanceApp.Authentication do
   """
   def get_credential_by_email_and_password(email, password)
       when is_binary(email) and is_binary(password) do
-    credential = Repo.get_by(Credential, email: email)
+    credential =
+      Credential
+    |> Repo.get_by(email: email)
+    |> case do
+      nil -> nil
+      cred -> Repo.preload(cred, :profile)
+    end
     if Credential.valid_password?(credential, password), do: credential
   end
 
@@ -59,7 +117,13 @@ defmodule FinanceApp.Authentication do
       ** (Ecto.NoResultsError)
 
   """
-  def get_credential!(id), do: Repo.get!(Credential, id)
+  def get_credential!(id, opts \\ []) do
+    preload_opts = Keyword.get(opts, :preload, [:profile]) # Changed from :credential_profile to :profile
+
+    Credential
+    |> preload(^preload_opts)
+    |> Repo.get!(id)
+  end
 
   ## Credential registration
 
@@ -232,7 +296,13 @@ defmodule FinanceApp.Authentication do
   """
   def get_credential_by_session_token(token) do
     {:ok, query} = CredentialToken.verify_session_token_query(token)
-    Repo.one(query)
+
+    query
+    |> Repo.one()
+    |> case do
+      nil -> nil
+        credential -> Repo.preload(credential, :profile)
+    end
   end
 
   @doc """
@@ -352,30 +422,4 @@ defmodule FinanceApp.Authentication do
     end
   end
 
-# Profile management functions
-def get_credential_profile(credential) do
-  Repo.get_by(CredentialProfile, credential_id: credential.id)
-end
-
-def get_credential_with_profile(id) do
-  Credential
-  |> Repo.get!(id)
-  |> Repo.preload(:credential_profile)
-end
-
-def create_credential_profile(credential, attrs) do
-  %CredentialProfile{}
-  |> CredentialProfile.changeset(Map.put(attrs, "credential_id", credential.id))
-  |> Repo.insert()
-end
-
-def update_credential_profile(profile, attrs) do
-  profile
-  |> CredentialProfile.changeset(attrs)
-  |> Repo.update()
-end
-
-def change_credential_profile(profile \\ %CredentialProfile{}, attrs \\ %{}) do
-  CredentialProfile.changeset(profile, attrs)
-end
 end

@@ -2,9 +2,9 @@ defmodule FinanceAppWeb.CredentialConfirmationLiveTest do
   use FinanceAppWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import FinanceApp.AuthenticationFixtures
+  import FinanceApp.CredentialsFixtures
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
   alias FinanceApp.Repo
 
   setup do
@@ -20,7 +20,7 @@ defmodule FinanceAppWeb.CredentialConfirmationLiveTest do
     test "confirms the given token once", %{conn: conn, credential: credential} do
       token =
         extract_credential_token(fn url ->
-          Authentication.deliver_credential_confirmation_instructions(credential, url)
+          Credentials.deliver_credential_confirmation_instructions(credential, url)
         end)
 
       {:ok, lv, _html} = live(conn, ~p"/credentials/confirm/#{token}")
@@ -36,9 +36,9 @@ defmodule FinanceAppWeb.CredentialConfirmationLiveTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "Credential confirmed successfully"
 
-      assert Authentication.get_credential!(credential.id).confirmed_at
+      assert Credentials.get_credential!(credential.id).confirmed_at
       refute get_session(conn, :credential_token)
-      assert Repo.all(Authentication.CredentialToken) == []
+      assert Repo.all(Credentials.CredentialToken) == []
 
       # when not logged in
       {:ok, lv, _html} = live(conn, ~p"/credentials/confirm/#{token}")
@@ -83,7 +83,7 @@ defmodule FinanceAppWeb.CredentialConfirmationLiveTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
                "Credential confirmation link is invalid or it has expired"
 
-      refute Authentication.get_credential!(credential.id).confirmed_at
+      refute Credentials.get_credential!(credential.id).confirmed_at
     end
   end
 end

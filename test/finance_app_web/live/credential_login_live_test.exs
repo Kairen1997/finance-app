@@ -2,7 +2,7 @@ defmodule FinanceAppWeb.CredentialLoginLiveTest do
   use FinanceAppWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import FinanceApp.AuthenticationFixtures
+  import FinanceApp.CredentialsFixtures
 
   describe "Log in page" do
     test "renders log in page", %{conn: conn} do

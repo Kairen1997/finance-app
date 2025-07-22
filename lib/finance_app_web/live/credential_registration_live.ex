@@ -1,8 +1,8 @@
 defmodule FinanceAppWeb.CredentialRegistrationLive do
   use FinanceAppWeb, :live_view
 
-  alias FinanceApp.Authentication
-  alias FinanceApp.Authentication.Credential
+  alias FinanceApp.Credentials
+  alias FinanceApp.Credentials.Credential
 
   def render(assigns) do
     ~H"""
@@ -43,7 +43,7 @@ defmodule FinanceAppWeb.CredentialRegistrationLive do
   end
 
   def mount(_params, _session, socket) do
-    changeset = Authentication.change_credential_registration(%Credential{})
+    changeset = Credentials.change_credential_registration(%Credential{})
 
     socket =
       socket
@@ -54,15 +54,15 @@ defmodule FinanceAppWeb.CredentialRegistrationLive do
   end
 
   def handle_event("save", %{"credential" => credential_params}, socket) do
-    case Authentication.register_credential(credential_params) do
+    case Credentials.register_credential(credential_params) do
       {:ok, credential} ->
         {:ok, _} =
-          Authentication.deliver_credential_confirmation_instructions(
+          Credentials.deliver_credential_confirmation_instructions(
             credential,
             &url(~p"/credentials/confirm/#{&1}")
           )
 
-        changeset = Authentication.change_credential_registration(credential)
+        changeset = Credentials.change_credential_registration(credential)
         {:noreply, socket |> assign(trigger_submit: true) |> assign_form(changeset)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -71,7 +71,7 @@ defmodule FinanceAppWeb.CredentialRegistrationLive do
   end
 
   def handle_event("validate", %{"credential" => credential_params}, socket) do
-    changeset = Authentication.change_credential_registration(%Credential{}, credential_params)
+    changeset = Credentials.change_credential_registration(%Credential{}, credential_params)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
   end
 

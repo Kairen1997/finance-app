@@ -1,7 +1,7 @@
 defmodule FinanceAppWeb.CredentialConfirmationLive do
   use FinanceAppWeb, :live_view
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
 
   def render(%{live_action: :edit} = assigns) do
     ~H"""
@@ -31,7 +31,7 @@ defmodule FinanceAppWeb.CredentialConfirmationLive do
   # Do not log in the credential after confirmation to avoid a
   # leaked token giving the credential access to the account.
   def handle_event("confirm_account", %{"credential" => %{"token" => token}}, socket) do
-    case Authentication.confirm_credential(token) do
+    case Credentials.confirm_credential(token) do
       {:ok, _} ->
         {:noreply,
          socket

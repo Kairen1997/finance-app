@@ -45,7 +45,7 @@ defmodule FinanceAppWeb.ConnCase do
   test context.
   """
   def register_and_log_in_credential(%{conn: conn}) do
-    credential = FinanceApp.AuthenticationFixtures.credential_fixture()
+      credential = FinanceApp.CredentialsFixtures.credential_fixture()
     %{conn: log_in_credential(conn, credential), credential: credential}
   end
 
@@ -55,7 +55,7 @@ defmodule FinanceAppWeb.ConnCase do
   It returns an updated `conn`.
   """
   def log_in_credential(conn, credential) do
-    token = FinanceApp.Authentication.generate_credential_session_token(credential)
+    token = FinanceApp.Credentials.generate_credential_session_token(credential)
 
     conn
     |> Phoenix.ConnTest.init_test_session(%{})

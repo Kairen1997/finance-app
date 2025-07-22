@@ -2,16 +2,16 @@ defmodule FinanceAppWeb.CredentialResetPasswordLiveTest do
   use FinanceAppWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import FinanceApp.AuthenticationFixtures
+  import FinanceApp.Fixtures
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.
 
   setup do
     credential = credential_fixture()
 
     token =
       extract_credential_token(fn url ->
-        Authentication.deliver_credential_reset_password_instructions(credential, url)
+        .deliver_credential_reset_password_instructions(credential, url)
       end)
 
     %{token: token, credential: credential}
@@ -65,7 +65,7 @@ defmodule FinanceAppWeb.CredentialResetPasswordLiveTest do
 
       refute get_session(conn, :credential_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password reset successfully"
-      assert Authentication.get_credential_by_email_and_password(credential.email, "new valid password")
+      assert .get_credential_by_email_and_password(credential.email, "new valid password")
     end
 
     test "does not reset password on invalid data", %{conn: conn, token: token} do

@@ -1,7 +1,9 @@
 defmodule FinanceAppWeb.CredentialSettingsLive do
   use FinanceAppWeb, :live_view
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
+  alias FinanceApp.Credentials.CredentialProfile
+
 
   def render(assigns) do
     ~H"""
@@ -69,13 +71,65 @@ defmodule FinanceAppWeb.CredentialSettingsLive do
           </:actions>
         </.simple_form>
       </div>
+        <div>
+          <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Profile Information</h3>
+          <.simple_form
+            for={@profile_form}
+            id="profile_form"
+            phx-submit="update_profile"
+            phx-change="validate_profile"
+          >
+            <.input
+              field={@profile_form[:full_name]}
+              type="text"
+              label="Full Name"
+              required
+            />
+            <.input
+              field={@profile_form[:ic]}
+              type="text"
+              label="IC Number"
+              placeholder="123456789012"
+              required
+            />
+            <.input
+              field={@profile_form[:status]}
+              type="select"
+              label="Status"
+              options={[{"Active", "active"}, {"Inactive", "inactive"}, {"Pending", "pending"}]}
+              required
+            />
+            <.input
+              field={@profile_form[:phone]}
+              type="text"
+              label="Phone Number"
+              placeholder="+60123456789"
+            />
+            <.input
+              field={@profile_form[:date_of_birth]}
+              type="date"
+              label="Date of Birth"
+            />
+            <.input
+              field={@profile_form[:address]}
+              type="textarea"
+              label="Address"
+              rows="3"
+            />
+            <:actions>
+              <.button phx-disable-with="Saving...">
+                <%= if @current_profile, do: "Update Profile", else: "Create Profile" %>
+              </.button>
+            </:actions>
+          </.simple_form>
+        </div>
     </div>
     """
   end
 
   def mount(%{"token" => token}, _session, socket) do
     socket =
-      case Authentication.update_credential_email(socket.assigns.current_credential, token) do
+      case Credentials.update_credential_email(socket.assigns.current_credential, token) do
         :ok ->
           put_flash(socket, :info, "Email changed successfully.")
 
@@ -88,8 +142,12 @@ defmodule FinanceAppWeb.CredentialSettingsLive do
 
   def mount(_params, _session, socket) do
     credential = socket.assigns.current_credential
-    email_changeset = Authentication.change_credential_email(credential)
-    password_changeset = Authentication.change_credential_password(credential)
+    profile = Credentials.get_credential_profile_by_credential_id(credential.id)
+
+    email_changeset = Credentials.change_credential_email(credential)
+    password_changeset = Credentials.change_credential_password(credential)
+    profile_changeset = Credentials.change_credential_profile(profile)
+
 
     socket =
       socket
@@ -98,6 +156,8 @@ defmodule FinanceAppWeb.CredentialSettingsLive do
       |> assign(:current_email, credential.email)
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
+      |> assign(:profile_form, to_form(profile_changeset))
+      |> assign(:current_profile, profile)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
@@ -108,7 +168,7 @@ defmodule FinanceAppWeb.CredentialSettingsLive do
 
     email_form =
       socket.assigns.current_credential
-      |> Authentication.change_credential_email(credential_params)
+      |> Credentials.change_credential_email(credential_params)
       |> Map.put(:action, :validate)
       |> to_form()
 
@@ -119,9 +179,9 @@ defmodule FinanceAppWeb.CredentialSettingsLive do
     %{"current_password" => password, "credential" => credential_params} = params
     credential = socket.assigns.current_credential
 
-    case Authentication.apply_credential_email(credential, password, credential_params) do
+    case Credentials.apply_credential_email(credential, password, credential_params) do
       {:ok, applied_credential} ->
-        Authentication.deliver_credential_update_email_instructions(
+        Credentials.deliver_credential_update_email_instructions(
           applied_credential,
           credential.email,
           &url(~p"/credentials/settings/confirm_email/#{&1}")
@@ -140,7 +200,7 @@ defmodule FinanceAppWeb.CredentialSettingsLive do
 
     password_form =
       socket.assigns.current_credential
-      |> Authentication.change_credential_password(credential_params)
+      |> Credentials.change_credential_password(credential_params)
       |> Map.put(:action, :validate)
       |> to_form()
 
@@ -151,17 +211,63 @@ defmodule FinanceAppWeb.CredentialSettingsLive do
     %{"current_password" => password, "credential" => credential_params} = params
     credential = socket.assigns.current_credential
 
-    case Authentication.update_credential_password(credential, password, credential_params) do
+    case Credentials.update_credential_password(credential, password, credential_params) do
       {:ok, credential} ->
         password_form =
           credential
-          |> Authentication.change_credential_password(credential_params)
+          |> Credentials.change_credential_password(credential_params)
           |> to_form()
 
         {:noreply, assign(socket, trigger_submit: true, password_form: password_form)}
 
       {:error, changeset} ->
         {:noreply, assign(socket, password_form: to_form(changeset))}
+    end
+  end
+
+  def handle_event("validate_profile", %{"credential_profile" => profile_params}, socket) do
+    profile = socket.assigns.current_profile || %CredentialProfile{}
+
+    profile_form =
+      profile
+      |> Credentials.change_credential_profile(profile_params)
+      |> Map.put(:action, :validate)
+      |> to_form()
+
+    {:noreply, assign(socket, profile_form: profile_form)}
+  end
+
+  def handle_event("update_profile", %{"credential_profile" => profile_params}, socket) do
+    credential = socket.assigns.current_credential
+
+    case socket.assigns.current_profile do
+      nil ->
+        # Create new profile
+        case Credentials.create_credential_profile(credential, profile_params) do
+          {:ok, profile} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Profile created successfully.")
+             |> assign(:current_profile, profile)
+             |> assign(:profile_form, to_form(Credentials.change_credential_profile(profile)))}
+
+          {:error, changeset} ->
+            {:noreply, assign(socket, :profile_form, to_form(changeset))}
+        end
+
+      profile ->
+        # Update existing profile
+        case Credentials.update_credential_profile(profile, profile_params) do
+          {:ok, updated_profile} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Profile updated successfully.")
+             |> assign(:current_profile, updated_profile)
+             |> assign(:profile_form, to_form(Credentials.change_credential_profile(updated_profile)))}
+
+          {:error, changeset} ->
+            {:noreply, assign(socket, :profile_form, to_form(changeset))}
+        end
     end
   end
 end

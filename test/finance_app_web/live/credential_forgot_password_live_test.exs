@@ -2,9 +2,9 @@ defmodule FinanceAppWeb.CredentialForgotPasswordLiveTest do
   use FinanceAppWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import FinanceApp.AuthenticationFixtures
+  import FinanceApp.CredentialsFixtures
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
   alias FinanceApp.Repo
 
   describe "Forgot password page" do
@@ -43,7 +43,7 @@ defmodule FinanceAppWeb.CredentialForgotPasswordLiveTest do
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "If your email is in our system"
 
-      assert Repo.get_by!(Authentication.CredentialToken, credential_id: credential.id).context ==
+      assert Repo.get_by!(Credentials.CredentialToken, credential_id: credential.id).context ==
                "reset_password"
     end
 
@@ -57,7 +57,7 @@ defmodule FinanceAppWeb.CredentialForgotPasswordLiveTest do
         |> follow_redirect(conn, "/")
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "If your email is in our system"
-      assert Repo.all(Authentication.CredentialToken) == []
+      assert Repo.all(Credentials.CredentialToken) == []
     end
   end
 end

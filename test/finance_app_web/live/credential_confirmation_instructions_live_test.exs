@@ -2,9 +2,9 @@ defmodule FinanceAppWeb.CredentialConfirmationInstructionsLiveTest do
   use FinanceAppWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import FinanceApp.AuthenticationFixtures
+  import FinanceApp.CredentialsFixtures
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
   alias FinanceApp.Repo
 
   setup do
@@ -29,11 +29,11 @@ defmodule FinanceAppWeb.CredentialConfirmationInstructionsLiveTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "If your email is in our system"
 
-      assert Repo.get_by!(Authentication.CredentialToken, credential_id: credential.id).context == "confirm"
+      assert Repo.get_by!(Credentials.CredentialToken, credential_id: credential.id).context == "confirm"
     end
 
     test "does not send confirmation token if credential is confirmed", %{conn: conn, credential: credential} do
-      Repo.update!(Authentication.Credential.confirm_changeset(credential))
+      Repo.update!(Credentials.Credential.confirm_changeset(credential))
 
       {:ok, lv, _html} = live(conn, ~p"/credentials/confirm")
 
@@ -46,7 +46,7 @@ defmodule FinanceAppWeb.CredentialConfirmationInstructionsLiveTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "If your email is in our system"
 
-      refute Repo.get_by(Authentication.CredentialToken, credential_id: credential.id)
+      refute Repo.get_by(Credentials.CredentialToken, credential_id: credential.id)
     end
 
     test "does not send confirmation token if email is invalid", %{conn: conn} do
@@ -61,7 +61,7 @@ defmodule FinanceAppWeb.CredentialConfirmationInstructionsLiveTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "If your email is in our system"
 
-      assert Repo.all(Authentication.CredentialToken) == []
+      assert Repo.all(Credentials.CredentialToken) == []
     end
   end
 end

@@ -1,7 +1,7 @@
-defmodule FinanceApp.AuthenticationFixtures do
+defmodule FinanceApp.CredentialsFixtures do
   @moduledoc """
   This module defines test helpers for creating
-  entities via the `FinanceApp.Authentication` context.
+  entities via the `FinanceApp.Credentials` context.
   """
 
   def unique_credential_email, do: "credential#{System.unique_integer()}@example.com"
@@ -18,7 +18,7 @@ defmodule FinanceApp.AuthenticationFixtures do
     {:ok, credential} =
       attrs
       |> valid_credential_attributes()
-      |> FinanceApp.Authentication.register_credential()
+      |> FinanceApp.Credentials.register_credential()
 
     credential
   end

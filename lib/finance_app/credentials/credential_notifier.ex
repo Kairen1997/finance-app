@@ -1,4 +1,4 @@
-defmodule FinanceApp.Authentication.CredentialNotifier do
+defmodule FinanceApp.Credentials.CredentialNotifier do
   import Swoosh.Email
 
   alias FinanceApp.Mailer

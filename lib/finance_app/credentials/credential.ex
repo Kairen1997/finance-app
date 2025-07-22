@@ -1,6 +1,8 @@
-defmodule FinanceApp.Authentication.Credential do
+defmodule FinanceApp.Credentials.Credential do
   use Ecto.Schema
   import Ecto.Changeset
+
+  alias FinanceApp.Credentials.CredentialProfile
 
   schema "credentials" do
     field :email, :string
@@ -10,7 +12,8 @@ defmodule FinanceApp.Authentication.Credential do
     field :confirmed_at, :utc_datetime
 
     # Add this in the schema block
-has_one :credential_profile, FinanceApp.Credentials.CredentialProfile
+    has_one :profile, CredentialProfile
+
     timestamps(type: :utc_datetime)
   end
 
@@ -136,7 +139,7 @@ has_one :credential_profile, FinanceApp.Credentials.CredentialProfile
   If there is no credential or the credential doesn't have a password, we call
   `Pbkdf2.no_user_verify/0` to avoid timing attacks.
   """
-  def valid_password?(%FinanceApp.Authentication.Credential{hashed_password: hashed_password}, password)
+  def valid_password?(%FinanceApp.Credentials.Credential{hashed_password: hashed_password}, password)
       when is_binary(hashed_password) and byte_size(password) > 0 do
     Pbkdf2.verify_pass(password, hashed_password)
   end

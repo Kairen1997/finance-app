@@ -2,7 +2,7 @@ defmodule FinanceAppWeb.CredentialRegistrationLiveTest do
   use FinanceAppWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import FinanceApp.AuthenticationFixtures
+  import FinanceApp.Fixtures
 
   describe "Registration page" do
     test "renders registration page", %{conn: conn} do

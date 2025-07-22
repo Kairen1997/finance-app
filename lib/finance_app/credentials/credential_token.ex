@@ -1,7 +1,7 @@
-defmodule FinanceApp.Authentication.CredentialToken do
+defmodule FinanceApp.Credentials.CredentialToken do
   use Ecto.Schema
   import Ecto.Query
-  alias FinanceApp.Authentication.CredentialToken
+  alias FinanceApp.Credentials.CredentialToken
 
   @hash_algorithm :sha256
   @rand_size 32
@@ -17,7 +17,7 @@ defmodule FinanceApp.Authentication.CredentialToken do
     field :token, :binary
     field :context, :string
     field :sent_to, :string
-    belongs_to :credential, FinanceApp.Authentication.Credential
+    belongs_to :credential, FinanceApp.Credentials.Credential
 
     timestamps(type: :utc_datetime, updated_at: false)
   end

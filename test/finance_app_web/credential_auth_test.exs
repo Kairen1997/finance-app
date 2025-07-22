@@ -2,9 +2,9 @@ defmodule FinanceAppWeb.CredentialAuthTest do
   use FinanceAppWeb.ConnCase, async: true
 
   alias Phoenix.LiveView
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
   alias FinanceAppWeb.CredentialAuth
-  import FinanceApp.AuthenticationFixtures
+  import FinanceApp.CredentialsFixtures
 
   @remember_me_cookie "_finance_app_web_credential_remember_me"
 
@@ -23,7 +23,7 @@ defmodule FinanceAppWeb.CredentialAuthTest do
       assert token = get_session(conn, :credential_token)
       assert get_session(conn, :live_socket_id) == "credentials_sessions:#{Base.url_encode64(token)}"
       assert redirected_to(conn) == ~p"/"
-      assert Authentication.get_credential_by_session_token(token)
+      assert Credentials.get_credential_by_session_token(token)
     end
 
     test "clears everything previously stored in the session", %{conn: conn, credential: credential} do
@@ -48,7 +48,7 @@ defmodule FinanceAppWeb.CredentialAuthTest do
 
   describe "logout_credential/1" do
     test "erases session and cookies", %{conn: conn, credential: credential} do
-      credential_token = Authentication.generate_credential_session_token(credential)
+      credential_token = Credentials.generate_credential_session_token(credential)
 
       conn =
         conn
@@ -61,7 +61,7 @@ defmodule FinanceAppWeb.CredentialAuthTest do
       refute conn.cookies[@remember_me_cookie]
       assert %{max_age: 0} = conn.resp_cookies[@remember_me_cookie]
       assert redirected_to(conn) == ~p"/"
-      refute Authentication.get_credential_by_session_token(credential_token)
+      refute Credentials.get_credential_by_session_token(credential_token)
     end
 
     test "broadcasts to the given live_socket_id", %{conn: conn} do
@@ -85,7 +85,7 @@ defmodule FinanceAppWeb.CredentialAuthTest do
 
   describe "fetch_current_credential/2" do
     test "authenticates credential from session", %{conn: conn, credential: credential} do
-      credential_token = Authentication.generate_credential_session_token(credential)
+      credential_token = Credentials.generate_credential_session_token(credential)
       conn = conn |> put_session(:credential_token, credential_token) |> CredentialAuth.fetch_current_credential([])
       assert conn.assigns.current_credential.id == credential.id
     end
@@ -110,7 +110,7 @@ defmodule FinanceAppWeb.CredentialAuthTest do
     end
 
     test "does not authenticate if data is missing", %{conn: conn, credential: credential} do
-      _ = Authentication.generate_credential_session_token(credential)
+      _ = Credentials.generate_credential_session_token(credential)
       conn = CredentialAuth.fetch_current_credential(conn, [])
       refute get_session(conn, :credential_token)
       refute conn.assigns.current_credential
@@ -119,7 +119,7 @@ defmodule FinanceAppWeb.CredentialAuthTest do
 
   describe "on_mount :mount_current_credential" do
     test "assigns current_credential based on a valid credential_token", %{conn: conn, credential: credential} do
-      credential_token = Authentication.generate_credential_session_token(credential)
+      credential_token = Credentials.generate_credential_session_token(credential)
       session = conn |> put_session(:credential_token, credential_token) |> get_session()
 
       {:cont, updated_socket} =
@@ -150,7 +150,7 @@ defmodule FinanceAppWeb.CredentialAuthTest do
 
   describe "on_mount :ensure_authenticated" do
     test "authenticates current_credential based on a valid credential_token", %{conn: conn, credential: credential} do
-      credential_token = Authentication.generate_credential_session_token(credential)
+      credential_token = Credentials.generate_credential_session_token(credential)
       session = conn |> put_session(:credential_token, credential_token) |> get_session()
 
       {:cont, updated_socket} =
@@ -187,7 +187,7 @@ defmodule FinanceAppWeb.CredentialAuthTest do
 
   describe "on_mount :redirect_if_credential_is_authenticated" do
     test "redirects if there is an authenticated  credential ", %{conn: conn, credential: credential} do
-      credential_token = Authentication.generate_credential_session_token(credential)
+        credential_token = Credentials.generate_credential_session_token(credential)
       session = conn |> put_session(:credential_token, credential_token) |> get_session()
 
       assert {:halt, _updated_socket} =

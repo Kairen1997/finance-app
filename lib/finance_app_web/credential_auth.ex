@@ -4,7 +4,7 @@ defmodule FinanceAppWeb.CredentialAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -26,7 +26,7 @@ defmodule FinanceAppWeb.CredentialAuth do
   if you are not using LiveView.
   """
   def log_in_credential(conn, credential, params \\ %{}) do
-    token = Authentication.generate_credential_session_token(credential)
+    token = Credentials.generate_credential_session_token(credential)
     credential_return_to = get_session(conn, :credential_return_to)
 
     conn
@@ -74,7 +74,7 @@ defmodule FinanceAppWeb.CredentialAuth do
   """
   def log_out_credential(conn) do
     credential_token = get_session(conn, :credential_token)
-    credential_token && Authentication.delete_credential_session_token(credential_token)
+    credential_token && Credentials.delete_credential_session_token(credential_token)
 
     if live_socket_id = get_session(conn, :live_socket_id) do
       FinanceAppWeb.Endpoint.broadcast(live_socket_id, "disconnect", %{})
@@ -92,7 +92,7 @@ defmodule FinanceAppWeb.CredentialAuth do
   """
   def fetch_current_credential(conn, _opts) do
     {credential_token, conn} = ensure_credential_token(conn)
-    credential = credential_token && Authentication.get_credential_by_session_token(credential_token)
+    credential = credential_token && Credentials.get_credential_by_session_token(credential_token)
     assign(conn, :current_credential, credential)
   end
 
@@ -177,7 +177,7 @@ defmodule FinanceAppWeb.CredentialAuth do
   defp mount_current_credential(socket, session) do
     Phoenix.Component.assign_new(socket, :current_credential, fn ->
       if credential_token = session["credential_token"] do
-        Authentication.get_credential_by_session_token(credential_token)
+        Credentials.get_credential_by_session_token(credential_token)
       end
     end)
   end
@@ -224,6 +224,5 @@ defmodule FinanceAppWeb.CredentialAuth do
   end
 
   defp maybe_store_return_to(conn), do: conn
-
   defp signed_in_path(_conn), do: ~p"/"
 end

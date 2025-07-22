@@ -1,7 +1,7 @@
 defmodule FinanceAppWeb.CredentialForgotPasswordLive do
   use FinanceAppWeb, :live_view
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
 
   def render(assigns) do
     ~H"""
@@ -32,8 +32,8 @@ defmodule FinanceAppWeb.CredentialForgotPasswordLive do
   end
 
   def handle_event("send_email", %{"credential" => %{"email" => email}}, socket) do
-    if credential = Authentication.get_credential_by_email(email) do
-      Authentication.deliver_credential_reset_password_instructions(
+      if credential = Credentials.get_credential_by_email(email) do
+      Credentials.deliver_credential_reset_password_instructions(
         credential,
         &url(~p"/credentials/reset_password/#{&1}")
       )

@@ -1,7 +1,7 @@
 defmodule FinanceAppWeb.CredentialSessionController do
   use FinanceAppWeb, :controller
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
   alias FinanceAppWeb.CredentialAuth
 
   def create(conn, %{"_action" => "registered"} = params) do
@@ -21,7 +21,7 @@ defmodule FinanceAppWeb.CredentialSessionController do
   defp create(conn, %{"credential" => credential_params}, info) do
     %{"email" => email, "password" => password} = credential_params
 
-    if credential = Authentication.get_credential_by_email_and_password(email, password) do
+    if credential = Credentials.get_credential_by_email_and_password(email, password) do
       conn
       |> put_flash(:info, info)
       |> CredentialAuth.log_in_credential(credential, credential_params)

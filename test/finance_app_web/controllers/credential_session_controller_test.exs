@@ -1,7 +1,7 @@
 defmodule FinanceAppWeb.CredentialSessionControllerTest do
   use FinanceAppWeb.ConnCase, async: true
 
-  import FinanceApp.AuthenticationFixtures
+  import FinanceApp.CredentialsFixtures
 
   setup do
     %{credential: credential_fixture()}

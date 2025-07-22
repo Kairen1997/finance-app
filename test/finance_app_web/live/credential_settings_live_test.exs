@@ -1,9 +1,9 @@
 defmodule FinanceAppWeb.CredentialSettingsLiveTest do
   use FinanceAppWeb.ConnCase, async: true
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
   import Phoenix.LiveViewTest
-  import FinanceApp.AuthenticationFixtures
+  import FinanceApp.CredentialsFixtures
 
   describe "Settings page" do
     test "renders settings page", %{conn: conn} do
@@ -46,7 +46,7 @@ defmodule FinanceAppWeb.CredentialSettingsLiveTest do
         |> render_submit()
 
       assert result =~ "A link to confirm your email"
-      assert Authentication.get_credential_by_email(credential.email)
+      assert Credentials.get_credential_by_email(credential.email)
     end
 
     test "renders errors with invalid data (phx-change)", %{conn: conn} do
@@ -115,7 +115,7 @@ defmodule FinanceAppWeb.CredentialSettingsLiveTest do
       assert Phoenix.Flash.get(new_password_conn.assigns.flash, :info) =~
                "Password updated successfully"
 
-      assert Authentication.get_credential_by_email_and_password(credential.email, new_password)
+      assert Credentials.get_credential_by_email_and_password(credential.email, new_password)
     end
 
     test "renders errors with invalid data (phx-change)", %{conn: conn} do
@@ -165,7 +165,7 @@ defmodule FinanceAppWeb.CredentialSettingsLiveTest do
 
       token =
         extract_credential_token(fn url ->
-          Authentication.deliver_credential_update_email_instructions(%{credential | email: email}, credential.email, url)
+          Credentials.deliver_credential_update_email_instructions(%{credential | email: email}, credential.email, url)
         end)
 
       %{conn: log_in_credential(conn, credential), token: token, email: email, credential: credential}
@@ -178,8 +178,8 @@ defmodule FinanceAppWeb.CredentialSettingsLiveTest do
       assert path == ~p"/credentials/settings"
       assert %{"info" => message} = flash
       assert message == "Email changed successfully."
-      refute Authentication.get_credential_by_email(credential.email)
-      assert Authentication.get_credential_by_email(email)
+      refute Credentials.get_credential_by_email(credential.email)
+      assert Credentials.get_credential_by_email(email)
 
       # use confirm token again
       {:error, redirect} = live(conn, ~p"/credentials/settings/confirm_email/#{token}")
@@ -195,7 +195,7 @@ defmodule FinanceAppWeb.CredentialSettingsLiveTest do
       assert path == ~p"/credentials/settings"
       assert %{"error" => message} = flash
       assert message == "Email change link is invalid or it has expired."
-      assert Authentication.get_credential_by_email(credential.email)
+      assert Credentials.get_credential_by_email(credential.email)
     end
 
     test "redirects if credential is not logged in", %{token: token} do

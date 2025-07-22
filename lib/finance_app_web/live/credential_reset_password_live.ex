@@ -1,7 +1,7 @@
 defmodule FinanceAppWeb.CredentialResetPasswordLive do
   use FinanceAppWeb, :live_view
 
-  alias FinanceApp.Authentication
+  alias FinanceApp.Credentials
 
   def render(assigns) do
     ~H"""
@@ -44,7 +44,7 @@ defmodule FinanceAppWeb.CredentialResetPasswordLive do
     form_source =
       case socket.assigns do
         %{credential: credential} ->
-          Authentication.change_credential_password(credential)
+          Credentials.change_credential_password(credential)
 
         _ ->
           %{}
@@ -56,7 +56,7 @@ defmodule FinanceAppWeb.CredentialResetPasswordLive do
   # Do not log in the credential after reset password to avoid a
   # leaked token giving the credential access to the account.
   def handle_event("reset_password", %{"credential" => credential_params}, socket) do
-    case Authentication.reset_credential_password(socket.assigns.credential, credential_params) do
+    case Credentials.reset_credential_password(socket.assigns.credential, credential_params) do
       {:ok, _} ->
         {:noreply,
          socket
@@ -69,12 +69,12 @@ defmodule FinanceAppWeb.CredentialResetPasswordLive do
   end
 
   def handle_event("validate", %{"credential" => credential_params}, socket) do
-    changeset = Authentication.change_credential_password(socket.assigns.credential, credential_params)
+    changeset = Credentials.change_credential_password(socket.assigns.credential, credential_params)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
   end
 
   defp assign_credential_and_token(socket, %{"token" => token}) do
-    if credential = Authentication.get_credential_by_reset_password_token(token) do
+    if credential = Credentials.get_credential_by_reset_password_token(token) do
       assign(socket, credential: credential, token: token)
     else
       socket
